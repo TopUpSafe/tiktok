@@ -72,7 +72,7 @@
 
             <button id="downloadBtn" onclick="processVideo()"
                 class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg">
-                <span id="btnText">Unduh Video</span>
+                <span id="btnText">Cari Video</span>
                 <div id="btnLoader" class="loader hidden absolute"></div>
             </button>
         </div>
@@ -93,25 +93,20 @@
                         <h3 id="videoTitle" class="text-sm font-medium text-gray-900 truncate mt-1">Video Title</h3>
                         
                         <div class="mt-3">
-                            <!-- Tombol Download Baru -->
-                            <a id="downloadLink" href="#" target="_blank" rel="noreferrer"
+                            <!-- Tombol Download via Proxy -->
+                            <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow-md transition transform active:scale-95">
-                                <i class="fa-solid fa-external-link-alt mr-2"></i> BUKA & DOWNLOAD
-                            </a>
+                                <span id="proxyBtnText"><i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4</span>
+                                <div id="proxyBtnLoader" class="loader w-5 h-5 border-2 border-white border-t-transparent hidden"></div>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Instruksi Download Manual -->
-            <div class="mt-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 border border-blue-100">
-                <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Cara Menyimpan:</p>
-                <ol class="list-decimal list-inside space-y-1">
-                    <li>Klik tombol <b>BUKA & DOWNLOAD</b> di atas.</li>
-                    <li>Video akan terbuka di tab baru.</li>
-                    <li>Tekan titik tiga (⋮) di pojok video lalu pilih <b>Download</b>.</li>
-                </ol>
-            </div>
+            <p class="text-xs text-center text-gray-400 mt-4">
+                Server akan memproses video untuk Anda. Mohon tunggu beberapa detik setelah klik Download.
+            </p>
         </div>
 
         <div class="mt-8 text-center">
@@ -130,7 +125,11 @@
         const resultArea = document.getElementById('resultArea');
         const errorMsg = document.getElementById('errorMessage');
         const errorText = document.getElementById('errorText');
-        const downloadLink = document.getElementById('downloadLink');
+        
+        // Elemen Tombol Download Hasil
+        const proxyDownloadBtn = document.getElementById('proxyDownloadBtn');
+        const proxyBtnText = document.getElementById('proxyBtnText');
+        const proxyBtnLoader = document.getElementById('proxyBtnLoader');
 
         async function processVideo() {
             const url = inputUrl.value.trim();
@@ -145,7 +144,7 @@
             setLoading(true);
 
             try {
-                // Memanggil backend untuk mendapatkan URL "bersih"
+                // Endpoint process hanya untuk mengambil metadata (Thumbnail/Judul)
                 const response = await fetch(`${API_BASE_URL}/api/process`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -155,14 +154,14 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Gagal memproses video. Pastikan link publik.');
+                    throw new Error(data.detail || 'Gagal mencari video.');
                 }
 
                 showResult(data.data);
 
             } catch (error) {
                 console.error(error);
-                showError("Gagal menghubungi server. Pastikan URL benar & Server Aktif.");
+                showError("Gagal menghubungi server. Pastikan Space aktif.");
             } finally {
                 setLoading(false);
             }
@@ -172,12 +171,33 @@
             document.getElementById('videoThumb').src = data.thumbnail;
             document.getElementById('videoTitle').innerText = data.title;
             document.getElementById('videoAuthor').innerText = '@' + data.author;
-            
-            // Masukkan URL Video langsung dari TikTok ke tombol
-            downloadLink.href = data.video_url;
-            
-            // Tampilkan hasil
             resultArea.classList.remove('hidden');
+        }
+
+        function downloadViaProxy() {
+            const url = inputUrl.value.trim();
+            if (!url) return;
+
+            // Efek Loading pada tombol download
+            proxyDownloadBtn.disabled = true;
+            proxyBtnText.classList.add('hidden');
+            proxyBtnLoader.classList.remove('hidden');
+
+            // Kita arahkan browser ke endpoint Streaming Server
+            // Menggunakan encodeURIComponent agar URL aman
+            const downloadUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(url)}`;
+            
+            // Timeout kecil untuk memberi efek visual sebelum browser mengambil alih
+            setTimeout(() => {
+                window.location.href = downloadUrl;
+                
+                // Reset tombol setelah beberapa detik (asumsi download sudah mulai)
+                setTimeout(() => {
+                    proxyDownloadBtn.disabled = false;
+                    proxyBtnText.classList.remove('hidden');
+                    proxyBtnLoader.classList.add('hidden');
+                }, 3000);
+            }, 500);
         }
 
         function setLoading(isLoading) {
