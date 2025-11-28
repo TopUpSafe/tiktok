@@ -39,7 +39,7 @@
 
     <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8 relative">
         
-        <!-- Status Indicator Pojok Kanan Atas -->
+        <!-- Status Indicator -->
         <div id="serverStatus" class="absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-gray-100 px-2 py-1 rounded-full">
             <div class="loader"></div>
             <span class="text-gray-500">Cek Server...</span>
@@ -84,15 +84,21 @@
                     <p id="videoAuthor" class="text-xs font-bold text-gray-500">@User</p>
                     <h3 id="videoTitle" class="text-xs font-medium text-gray-800 truncate mt-1">Title</h3>
                     
+                    <!-- Tombol Utama (Proxy Stream V4) -->
                     <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
                        class="mt-3 w-full flex justify-center items-center px-3 py-2 text-xs font-bold rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow transition">
                         <span id="proxyBtnText"><i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4</span>
                         <div id="proxyBtnLoader" class="loader border-white border-t-transparent w-4 h-4 hidden"></div>
                     </button>
+                    
+                    <!-- Tombol Fallback (Jika server masih gagal) -->
+                    <a id="fallbackLink" href="#" target="_blank" class="hidden mt-2 w-full text-center text-[10px] text-gray-400 hover:text-gray-600 underline">
+                        Gagal? Coba Link Alternatif
+                    </a>
                 </div>
             </div>
             <p class="text-[10px] text-center text-gray-400 mt-2">
-                Download akan diproses melalui server proxy aman.
+                Menggunakan Metode V4 (Direct Pipe Streaming).
             </p>
         </div>
     </div>
@@ -106,25 +112,19 @@
         const btnText = document.getElementById('btnText');
         const inputUrl = document.getElementById('tiktokUrl');
         
-        // Cek Status Server saat Halaman Dibuka
         async function checkServer() {
             try {
                 const response = await fetch(`${API_BASE_URL}/`);
-                if (response.ok) {
-                    serverOnline();
-                } else {
-                    throw new Error("Server error");
-                }
+                if (response.ok) serverOnline();
+                else throw new Error("Server error");
             } catch (e) {
-                console.log("Server Check Failed:", e);
                 serverOffline();
             }
         }
 
         function serverOnline() {
-            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-green-500 text-[8px]"></i> <span class="text-green-600">Server Online</span>`;
+            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-green-500 text-[8px]"></i> <span class="text-green-600">Server Online (V4)</span>`;
             statusDiv.className = "absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-green-50 px-2 py-1 rounded-full border border-green-100";
-            
             downloadBtn.disabled = false;
             downloadBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
             downloadBtn.classList.add('bg-black', 'hover:bg-gray-800');
@@ -132,13 +132,10 @@
         }
 
         function serverOffline() {
-            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-red-500 text-[8px]"></i> <span class="text-red-600">Server Offline/Booting</span>`;
+            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-red-500 text-[8px]"></i> <span class="text-red-600">Offline/Booting</span>`;
             statusDiv.className = "absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-red-50 px-2 py-1 rounded-full border border-red-100";
-            
             downloadBtn.disabled = true;
-            btnText.innerText = "Server Tidak Terhubung";
-            
-            // Coba cek lagi setiap 5 detik (siapa tau lagi booting)
+            btnText.innerText = "Connecting...";
             setTimeout(checkServer, 5000);
         }
 
@@ -163,7 +160,7 @@
 
                 showResult(data.data);
             } catch (error) {
-                showError(error.message === "Failed to fetch" ? "Koneksi ke server gagal. Cek tab Logs di Hugging Face." : error.message);
+                showError("Gagal menghubungi server. Pastikan URL benar.");
             } finally {
                 setLoading(false);
             }
@@ -174,20 +171,28 @@
             const btn = document.getElementById('proxyDownloadBtn');
             const txt = document.getElementById('proxyBtnText');
             const load = document.getElementById('proxyBtnLoader');
+            const fallback = document.getElementById('fallbackLink');
 
             btn.disabled = true;
             txt.classList.add('hidden');
             load.classList.remove('hidden');
+            fallback.classList.add('hidden'); // Sembunyikan fallback saat loading
 
+            // Gunakan encodeURIComponent untuk keamanan
             const downloadUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(url)}`;
             
+            // Kita coba "ping" dulu url download, atau langsung buka
+            // Untuk file streaming, window.location.href adalah cara terbaik memicu download
             setTimeout(() => {
                 window.location.href = downloadUrl;
+                
+                // Kembalikan tombol setelah 5 detik, dan munculkan fallback
                 setTimeout(() => {
                     btn.disabled = false;
                     txt.classList.remove('hidden');
                     load.classList.add('hidden');
-                }, 3000);
+                    fallback.classList.remove('hidden'); // Tampilkan opsi fallback jika user masih di halaman ini
+                }, 5000);
             }, 500);
         }
 
@@ -195,6 +200,12 @@
             document.getElementById('videoThumb').src = data.thumbnail;
             document.getElementById('videoTitle').innerText = data.title;
             document.getElementById('videoAuthor').innerText = '@' + data.author;
+            
+            // Set link fallback ke URL asli yang dikembalikan backend (jika ada)
+            if(data.original_url) {
+                 document.getElementById('fallbackLink').href = data.original_url;
+            }
+            
             document.getElementById('resultArea').classList.remove('hidden');
         }
 
@@ -220,7 +231,6 @@
             document.getElementById('errorMessage').classList.add('hidden');
         }
 
-        // Jalankan cek server saat load
         checkServer();
     </script>
 </body>
