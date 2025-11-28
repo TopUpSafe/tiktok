@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikSave Pro - Download Video TikTok Tanpa Watermark</title>
-    <meta name="description" content="Download video TikTok kualitas HD tanpa watermark gratis. Cepat, mudah, dan aman.">
+    <title>TikSave Pro - Fast & Lite</title>
+    <meta name="description" content="Download video TikTok tanpa watermark. Versi ringan dan cepat.">
     
-    <!-- Fonts -->
+    <!-- Fonts: Inter (Lebih umum dan ringan dari Jakarta Sans, sering dicache browser) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,27 +18,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        sans: ['"Inter"', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#F8F9FA',
-                        accent: '#FF0050', // Warna TikTok
-                        accentHover: '#D60043',
-                        glass: 'rgba(255, 255, 255, 0.7)',
-                        glassBorder: 'rgba(255, 255, 255, 0.5)',
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        }
+                        // Palet Dark Mode Modern (Mirip Vercel/GitHub Dark)
+                        bg: '#0a0a0a',
+                        surface: '#171717',
+                        border: '#262626',
+                        accent: '#EDEDED',
+                        muted: '#A1A1AA',
+                        brand: '#e11d48', // Pink TikTok yang lebih gelap/elegan
                     }
                 }
             }
@@ -46,235 +39,171 @@
     </script>
 
     <style>
-        /* Modern Background Mesh */
+        /* Base Reset */
         body {
-            background-color: #0f172a;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            background-color: #0a0a0a; /* bg-neutral-950 */
+            color: #EDEDED;
+            /* Static subtle gradient - Ringan, tidak bergerak */
+            background-image: radial-gradient(circle at 50% 0%, #2a1820 0%, transparent 60%);
             background-attachment: fixed;
-            color: #1e293b;
+        }
+
+        /* Utility classes custom untuk performa maksimal (menggantikan backdrop-filter) */
+        .card-surface {
+            background-color: #171717;
+            border: 1px solid #262626;
         }
         
-        /* Glassmorphism Utilities */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        .input-surface {
+            background-color: #0a0a0a;
+            border: 1px solid #262626;
         }
 
-        .dark-glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Focus ring yang tajam tanpa shadow berat */
+        .focus-ring:focus-within {
+            border-color: #525252;
+            outline: 2px solid transparent;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="antialiased text-slate-800 flex flex-col min-h-screen">
+<body class="antialiased flex flex-col min-h-screen">
 
-    <!-- Navbar Sederhana -->
-    <nav class="fixed w-full z-50 top-0 transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                        <i class="fa-brands fa-tiktok"></i>
-                    </div>
-                    <span class="text-white font-bold text-lg tracking-tight">TikSave<span class="text-cyan-400">Pro</span></span>
-                </div>
-                
-                <!-- Server Status Indicator (Pill Design) -->
-                <div id="serverStatus" class="hidden md:flex items-center space-x-2 bg-slate-800/50 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/50">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
-                    </span>
-                    <span class="text-xs font-medium text-slate-300">Connecting...</span>
-                </div>
+    <!-- Navbar Minimalis -->
+    <nav class="w-full border-b border-border bg-bg/95 z-50">
+        <div class="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-brands fa-tiktok text-brand text-xl"></i>
+                <span class="font-bold tracking-tight text-lg">TikSave<span class="text-neutral-500">Lite</span></span>
+            </div>
+            
+            <!-- Status Indikator Statis (Hemat Animasi) -->
+            <div id="serverStatus" class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-border text-xs">
+                <div class="w-2 h-2 rounded-full bg-neutral-500"></div>
+                <span class="text-muted font-medium">Init...</span>
             </div>
         </div>
     </nav>
 
-    <!-- Main Hero Section -->
-    <main class="flex-grow flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-12 sm:px-6">
         
-        <!-- Animated Background Blobs -->
-        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-        <div class="absolute bottom-20 right-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style="animation-delay: 2s"></div>
-
-        <div class="w-full max-w-2xl relative z-10 flex flex-col items-center">
+        <div class="w-full max-w-lg space-y-8">
             
-            <!-- Headline -->
-            <div class="text-center mb-10 space-y-4">
-                <span class="inline-block py-1 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                    V4 Direct Stream Technology
-                </span>
-                <h1 class="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 leading-tight">
-                    Download TikTok <br/> Tanpa Watermark
+            <!-- Text Header -->
+            <div class="text-center space-y-2">
+                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-accent">
+                    Video Downloader
                 </h1>
-                <p class="text-slate-400 text-lg md:text-xl max-w-lg mx-auto">
-                    Simpan video favorit Anda dalam kualitas HD secara instan. Gratis, cepat, dan tanpa batas.
+                <p class="text-muted text-sm sm:text-base">
+                    Tempel tautan, unduh MP4 tanpa watermark.
                 </p>
             </div>
 
-            <!-- The Downloader Card -->
-            <div class="w-full glass-panel rounded-3xl p-2 shadow-2xl transform transition-all hover:scale-[1.01]">
-                <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/50">
+            <!-- Main Card -->
+            <div class="card-surface rounded-xl p-1 shadow-xl">
+                <div class="p-5 space-y-4">
                     
-                    <!-- Input Area -->
-                    <div class="relative group">
-                        <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                        <div class="relative flex items-center bg-white rounded-xl shadow-sm">
-                            <div class="pl-4 text-slate-400">
-                                <i class="fa-solid fa-link"></i>
-                            </div>
-                            <input type="url" id="tiktokUrl" 
-                                class="w-full py-4 px-4 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 font-medium" 
-                                placeholder="Tempel tautan TikTok di sini...">
-                            
-                            <!-- Paste Button -->
-                            <button onclick="pasteFromClipboard()" class="hidden md:flex items-center justify-center mr-2 p-2 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Paste Link">
-                                Paste
-                            </button>
-                            
-                            <!-- Main Action Button -->
-                            <button id="downloadBtn" onclick="processVideo()" disabled
-                                class="m-1.5 px-6 py-3 bg-slate-200 text-slate-400 rounded-lg font-bold shadow-sm cursor-not-allowed transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
-                                <span id="btnText">Loading...</span>
-                                <div id="btnLoader" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            </button>
+                    <!-- Input Group -->
+                    <div class="input-surface rounded-lg p-1 flex items-center gap-2 focus-ring transition-colors">
+                        <div class="pl-3 text-muted">
+                            <i class="fa-solid fa-link text-sm"></i>
                         </div>
+                        <input type="url" id="tiktokUrl" 
+                            class="w-full bg-transparent border-none py-3 text-sm text-accent placeholder-neutral-600 focus:ring-0 focus:outline-none" 
+                            placeholder="https://vt.tiktok.com/..." autocomplete="off">
+                        
+                        <button onclick="pasteFromClipboard()" class="hidden md:block px-3 py-1.5 text-xs font-medium text-muted hover:text-accent bg-surface border border-border rounded hover:bg-neutral-800 transition-colors">
+                            Paste
+                        </button>
                     </div>
 
-                    <!-- Paste Button Mobile (Visible only on small screens) -->
-                    <button onclick="pasteFromClipboard()" class="md:hidden mt-3 w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-slate-600 bg-white/60 rounded-lg border border-white/50">
-                        <i class="fa-regular fa-clipboard"></i> Tempel Tautan
+                    <!-- Button Paste Mobile -->
+                    <button onclick="pasteFromClipboard()" class="md:hidden w-full py-2 text-xs font-medium text-muted bg-surface border border-border rounded hover:bg-neutral-800">
+                         Tempel Tautan
                     </button>
 
-                    <!-- Error Message -->
-                    <div id="errorMessage" class="hidden mt-4 p-4 bg-red-50/80 border border-red-100 rounded-xl flex items-start gap-3 animate-fade-in-up">
-                        <i class="fa-solid fa-circle-exclamation text-red-500 mt-0.5"></i>
-                        <div class="text-sm text-red-600">
-                            <p class="font-bold">Gagal Memproses</p>
-                            <p id="errorText" class="opacity-90">Terjadi kesalahan.</p>
-                        </div>
+                    <!-- Action Button -->
+                    <button id="downloadBtn" onclick="processVideo()" disabled
+                        class="w-full py-3 px-4 bg-neutral-800 text-neutral-500 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+                        <span id="btnText">Menunggu Server...</span>
+                        <!-- Spinner CSS Murni (Lebih ringan dari SVG complex) -->
+                        <div id="btnLoader" class="hidden w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+
+                    <!-- Error Alert -->
+                    <div id="errorMessage" class="hidden p-3 bg-red-950/30 border border-red-900/50 rounded-lg flex gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-xs mt-0.5"></i>
+                        <p id="errorText" class="text-xs text-red-200">Error message here.</p>
                     </div>
-
-                    <!-- Result Area (Skeleton & Content) -->
-                    <div id="resultContainer" class="hidden mt-6">
-                        
-                        <!-- Skeleton Loading (Placeholder saat processing) -->
-                        <div id="skeletonLoader" class="hidden animate-pulse flex gap-4">
-                            <div class="w-24 h-32 bg-slate-200 rounded-xl"></div>
-                            <div class="flex-1 space-y-3 py-2">
-                                <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-                                <div class="h-3 bg-slate-200 rounded w-1/2"></div>
-                                <div class="h-10 bg-slate-200 rounded w-full mt-4"></div>
-                            </div>
-                        </div>
-
-                        <!-- Real Content -->
-                        <div id="resultContent" class="hidden bg-slate-50 border border-slate-100 rounded-xl p-4 transition-all">
-                            <div class="flex flex-col sm:flex-row gap-5">
-                                <!-- Thumbnail with Play Icon Overlay -->
-                                <div class="relative group w-full sm:w-32 flex-shrink-0">
-                                    <img id="videoThumb" src="" class="w-full h-48 sm:h-32 object-cover rounded-lg shadow-md bg-slate-200">
-                                    <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition rounded-lg flex items-center justify-center">
-                                        <i class="fa-solid fa-play text-white opacity-80 drop-shadow-lg"></i>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex-1 min-w-0 flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden">
-                                                <!-- Placeholder Avatar -->
-                                                <i class="fa-solid fa-user text-slate-400 p-1 text-xs"></i> 
-                                            </div>
-                                            <p id="videoAuthor" class="text-xs font-bold text-slate-500 uppercase tracking-wide">@USER</p>
-                                        </div>
-                                        <h3 id="videoTitle" class="text-sm font-semibold text-slate-800 line-clamp-2 leading-relaxed">
-                                            Video Title Here...
-                                        </h3>
-                                    </div>
-
-                                    <div class="mt-4 space-y-2">
-                                        <!-- Primary Action -->
-                                        <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
-                                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-accent to-pink-600 hover:from-accentHover hover:to-pink-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-pink-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95">
-                                            <span id="proxyBtnText"><i class="fa-solid fa-download"></i> Download Video (HD)</span>
-                                            <div id="proxyBtnLoader" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        </button>
-                                        
-                                        <!-- Fallback Action -->
-                                        <a id="fallbackLink" href="#" target="_blank" class="hidden block text-center text-xs text-slate-400 hover:text-accent underline transition">
-                                            Masalah? Klik Link Alternatif
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
-            <!-- Features Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 w-full text-slate-300">
-                <div class="dark-glass p-5 rounded-xl text-center">
-                    <div class="w-10 h-10 mx-auto bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center mb-3">
-                        <i class="fa-solid fa-bolt"></i>
+            <!-- Result Section -->
+            <div id="resultContainer" class="hidden">
+                <!-- Skeleton (Simple block colors) -->
+                <div id="skeletonLoader" class="card-surface rounded-xl p-4 animate-pulse flex gap-4">
+                    <div class="w-20 h-28 bg-neutral-800 rounded"></div>
+                    <div class="flex-1 space-y-3 py-1">
+                        <div class="h-4 bg-neutral-800 rounded w-3/4"></div>
+                        <div class="h-3 bg-neutral-800 rounded w-1/2"></div>
                     </div>
-                    <h3 class="font-bold text-white mb-1">Super Cepat</h3>
-                    <p class="text-xs text-slate-400">Teknologi V4 Direct Pipe memastikan kecepatan maksimal.</p>
                 </div>
-                <div class="dark-glass p-5 rounded-xl text-center">
-                    <div class="w-10 h-10 mx-auto bg-green-500/20 text-green-400 rounded-lg flex items-center justify-center mb-3">
-                        <i class="fa-solid fa-droplet-slash"></i>
+
+                <!-- Actual Result -->
+                <div id="resultContent" class="hidden card-surface rounded-xl p-4 border border-border">
+                    <div class="flex gap-4">
+                        <img id="videoThumb" src="" class="w-24 h-auto object-cover rounded bg-neutral-800 border border-border shrink-0">
+                        
+                        <div class="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                                <p id="videoAuthor" class="text-xs font-medium text-brand mb-0.5">@Username</p>
+                                <h3 id="videoTitle" class="text-sm text-accent line-clamp-2 leading-snug">Title video...</h3>
+                            </div>
+                            
+                            <div class="mt-3 space-y-2">
+                                <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
+                                    class="w-full py-2 bg-brand hover:bg-rose-600 text-white text-xs font-bold rounded shadow-sm transition-colors flex items-center justify-center gap-2">
+                                    <span id="proxyBtnText">Download HD</span>
+                                    <div id="proxyBtnLoader" class="hidden w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                                </button>
+                                
+                                <a id="fallbackLink" href="#" target="_blank" class="hidden block text-center text-[10px] text-muted underline decoration-dotted">
+                                    Link Alternatif
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-white mb-1">Tanpa Watermark</h3>
-                    <p class="text-xs text-slate-400">Video bersih tanpa logo TikTok yang mengganggu.</p>
                 </div>
-                <div class="dark-glass p-5 rounded-xl text-center">
-                    <div class="w-10 h-10 mx-auto bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center mb-3">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <h3 class="font-bold text-white mb-1">Aman & Gratis</h3>
-                    <p class="text-xs text-slate-400">Tidak perlu login, tidak ada data yang disimpan.</p>
+            </div>
+
+            <!-- Footer Features -->
+            <div class="grid grid-cols-3 gap-2 text-center pt-4">
+                <div class="p-3">
+                    <i class="fa-solid fa-gauge-high text-neutral-600 mb-2"></i>
+                    <p class="text-[10px] text-muted">Cepat</p>
+                </div>
+                <div class="p-3">
+                    <i class="fa-solid fa-ban text-neutral-600 mb-2"></i>
+                    <p class="text-[10px] text-muted">No WM</p>
+                </div>
+                <div class="p-3">
+                    <i class="fa-solid fa-lock text-neutral-600 mb-2"></i>
+                    <p class="text-[10px] text-muted">Aman</p>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900/50 backdrop-blur-lg border-t border-slate-800 text-slate-400 py-8">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-sm mb-2">&copy; 2024 TikSave Pro. Dibuat dengan Teknologi Serverless.</p>
-            <div class="flex justify-center space-x-4 text-xs">
-                <a href="#" class="hover:text-white transition">Privacy Policy</a>
-                <span>•</span>
-                <a href="#" class="hover:text-white transition">Terms of Service</a>
-                <span>•</span>
-                <a href="#" class="hover:text-white transition">Contact</a>
-            </div>
-        </div>
+    <footer class="py-6 text-center border-t border-border mt-auto">
+        <p class="text-[10px] text-neutral-600">© 2024 TikSave Lite. Serverless V4.</p>
     </footer>
 
     <script>
         // CONFIGURATION
         const API_BASE_URL = "https://dzaky123-tiktok-api.hf.space";
         
-        // DOM Elements
+        // DOM Elements (Cached)
         const ui = {
             status: document.getElementById('serverStatus'),
             input: document.getElementById('tiktokUrl'),
@@ -295,7 +224,7 @@
             fallback: document.getElementById('fallbackLink')
         };
 
-        // --- Logic: Server Check ---
+        // --- Server Check ---
         async function checkServer() {
             try {
                 const response = await fetch(`${API_BASE_URL}/`);
@@ -307,63 +236,45 @@
         }
 
         function setServerOnline() {
-            ui.status.innerHTML = `
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span class="text-xs font-medium text-green-400">Server Online</span>
-            `;
-            ui.status.classList.replace('border-slate-700/50', 'border-green-500/30');
-            ui.status.classList.replace('bg-slate-800/50', 'bg-green-900/20');
+            ui.status.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-green-500 font-medium">Ready</span>`;
+            ui.status.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-green-950/30 border border-green-900/50 text-xs";
             
             ui.mainBtn.disabled = false;
-            ui.mainBtn.className = "m-1.5 px-6 py-3 bg-gradient-to-r from-accent to-pink-600 hover:from-accentHover hover:to-pink-700 text-white rounded-lg font-bold shadow-lg shadow-accent/30 cursor-pointer transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2 whitespace-nowrap";
-            ui.mainBtnText.innerText = "Download";
+            ui.mainBtn.className = "w-full py-3 px-4 bg-white hover:bg-neutral-200 text-black rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow";
+            ui.mainBtnText.innerText = "Cari Video";
         }
 
         function setServerOffline() {
-            ui.status.innerHTML = `
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                <span class="text-xs font-medium text-red-400">Offline / Booting</span>
-            `;
-            ui.status.classList.replace('border-slate-700/50', 'border-red-500/30');
+            ui.status.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div><span class="text-red-500 font-medium">Offline</span>`;
+            ui.status.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/30 border border-red-900/50 text-xs";
             
             ui.mainBtn.disabled = true;
-            ui.mainBtn.className = "m-1.5 px-6 py-3 bg-slate-200 text-slate-400 rounded-lg font-bold shadow-sm cursor-not-allowed transition-all duration-300 flex items-center gap-2 whitespace-nowrap";
+            ui.mainBtn.className = "w-full py-3 px-4 bg-neutral-800 text-neutral-500 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed";
             ui.mainBtnText.innerText = "Connecting...";
-            
-            setTimeout(checkServer, 5000); // Retry loop
+            setTimeout(checkServer, 5000);
         }
 
-        // --- Logic: Clipboard Paste ---
+        // --- Paste ---
         async function pasteFromClipboard() {
             try {
                 const text = await navigator.clipboard.readText();
-                if (text) {
-                    ui.input.value = text;
-                    // Visual Feedback
-                    ui.input.classList.add('bg-green-50');
-                    setTimeout(() => ui.input.classList.remove('bg-green-50'), 300);
-                }
+                if (text) ui.input.value = text;
             } catch (err) {
-                alert('Izin clipboard tidak diberikan. Silakan tempel manual.');
+                // Fail silently or focus input
+                ui.input.focus();
             }
         }
 
-        // --- Logic: Process Video ---
+        // --- Process ---
         async function processVideo() {
             const url = ui.input.value.trim();
             resetUI();
             
-            if (!url) {
-                showError("Mohon masukkan link video TikTok terlebih dahulu.");
-                return;
-            }
+            if (!url) return showError("Masukkan URL dulu.");
 
             setLoading(true);
             ui.resultContainer.classList.remove('hidden');
-            ui.skeleton.classList.remove('hidden'); // Show skeleton
+            ui.skeleton.classList.remove('hidden');
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/process`, {
@@ -373,22 +284,21 @@
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Gagal mengambil data.');
+                if (!response.ok) throw new Error(data.detail || 'Gagal.');
 
                 showResult(data.data);
             } catch (error) {
-                ui.resultContainer.classList.add('hidden'); // Hide container if failed
-                showError(error.message === "Failed to fetch" ? "Koneksi terputus. Cek internet Anda." : error.message);
+                ui.resultContainer.classList.add('hidden');
+                showError("Gagal memproses. Cek koneksi / URL.");
             } finally {
                 setLoading(false);
-                ui.skeleton.classList.add('hidden'); // Hide skeleton
+                ui.skeleton.classList.add('hidden');
             }
         }
 
-        // --- Logic: Download Proxy ---
+        // --- Download ---
         function downloadViaProxy() {
             const url = ui.input.value.trim();
-            
             ui.proxyBtn.disabled = true;
             ui.proxyBtnText.classList.add('hidden');
             ui.proxyBtnLoader.classList.remove('hidden');
@@ -398,15 +308,13 @@
             
             setTimeout(() => {
                 window.location.href = downloadUrl;
-                
-                // Reset button state after delay
                 setTimeout(() => {
                     ui.proxyBtn.disabled = false;
                     ui.proxyBtnText.classList.remove('hidden');
                     ui.proxyBtnLoader.classList.add('hidden');
                     ui.fallback.classList.remove('hidden');
-                }, 5000);
-            }, 500);
+                }, 4000);
+            }, 300);
         }
 
         // --- Helpers ---
@@ -414,9 +322,7 @@
             ui.thumb.src = data.thumbnail;
             ui.title.innerText = data.title;
             ui.author.innerText = '@' + (data.author || 'User');
-            
             if(data.original_url) ui.fallback.href = data.original_url;
-            
             ui.content.classList.remove('hidden');
         }
 
@@ -444,18 +350,7 @@
             ui.error.classList.remove('hidden');
         }
 
-        // Init
         checkServer();
-        
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 10) {
-                nav.classList.add('bg-slate-900/80', 'backdrop-blur-md', 'shadow-lg');
-            } else {
-                nav.classList.remove('bg-slate-900/80', 'backdrop-blur-md', 'shadow-lg');
-            }
-        });
     </script>
 </body>
 </html>
