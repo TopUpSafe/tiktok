@@ -4,42 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TikTok Downloader Pro</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; }
-        
         .gradient-bg {
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
         }
-        
         @keyframes gradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #e73c7e;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e73c7e;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -48,15 +37,20 @@
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
 
-    <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8">
+    <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8 relative">
         
+        <!-- Status Indicator Pojok Kanan Atas -->
+        <div id="serverStatus" class="absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-gray-100 px-2 py-1 rounded-full">
+            <div class="loader"></div>
+            <span class="text-gray-500">Cek Server...</span>
+        </div>
+
         <!-- Header -->
-        <div class="text-center mb-8">
+        <div class="text-center mb-6">
             <div class="inline-block p-3 rounded-full bg-gray-100 mb-4 text-pink-500">
                 <i class="fa-brands fa-tiktok text-3xl"></i>
             </div>
             <h1 class="text-2xl font-bold text-gray-800">TikTok Downloader</h1>
-            <p class="text-sm text-gray-500 mt-2">Unduh video tanpa watermark, instan.</p>
         </div>
 
         <!-- Input Form -->
@@ -66,85 +60,98 @@
                     <i class="fa-solid fa-link text-gray-400"></i>
                 </div>
                 <input type="url" id="tiktokUrl" 
-                    class="block w-full pl-10 pr-3 py-4 border-2 border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition duration-150 ease-in-out sm:text-sm" 
+                    class="block w-full pl-10 pr-3 py-4 border-2 border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition sm:text-sm" 
                     placeholder="Tempel tautan TikTok di sini...">
             </div>
 
-            <button id="downloadBtn" onclick="processVideo()"
-                class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg">
-                <span id="btnText">Cari Video</span>
-                <div id="btnLoader" class="loader hidden absolute"></div>
+            <button id="downloadBtn" onclick="processVideo()" disabled
+                class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gray-400 cursor-not-allowed transition-all shadow-lg">
+                <span id="btnText">Menunggu Server...</span>
+                <div id="btnLoader" class="loader border-white border-t-transparent hidden w-6 h-6"></div>
             </button>
         </div>
 
         <!-- Error Message -->
-        <div id="errorMessage" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center border border-red-100">
-            <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="errorText">Terjadi kesalahan</span>
+        <div id="errorMessage" class="hidden mt-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg text-center border border-red-100">
+            <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="errorText">Error</span>
         </div>
 
         <!-- Result Area -->
-        <div id="resultArea" class="hidden mt-8 animate-fade-in transition-all duration-500">
-            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50">
-                <div class="flex items-start space-x-4">
-                    <img id="videoThumb" src="" alt="Thumbnail" class="w-20 h-20 object-cover rounded-lg shadow-sm bg-gray-200">
+        <div id="resultArea" class="hidden mt-6 animate-fade-in">
+            <div class="border border-gray-100 rounded-xl p-3 bg-gray-50 flex items-start space-x-3">
+                <img id="videoThumb" src="" class="w-20 h-20 object-cover rounded-lg bg-gray-200">
+                <div class="flex-1 min-w-0">
+                    <p id="videoAuthor" class="text-xs font-bold text-gray-500">@User</p>
+                    <h3 id="videoTitle" class="text-xs font-medium text-gray-800 truncate mt-1">Title</h3>
                     
-                    <div class="flex-1 min-w-0">
-                        <p id="videoAuthor" class="text-xs font-semibold text-gray-500 uppercase tracking-wide">@Author</p>
-                        <h3 id="videoTitle" class="text-sm font-medium text-gray-900 truncate mt-1">Video Title</h3>
-                        
-                        <div class="mt-3">
-                            <!-- Tombol Download via Proxy -->
-                            <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
-                               class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow-md transition transform active:scale-95">
-                                <span id="proxyBtnText"><i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4</span>
-                                <div id="proxyBtnLoader" class="loader w-5 h-5 border-2 border-white border-t-transparent hidden"></div>
-                            </button>
-                        </div>
-                    </div>
+                    <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
+                       class="mt-3 w-full flex justify-center items-center px-3 py-2 text-xs font-bold rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow transition">
+                        <span id="proxyBtnText"><i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4</span>
+                        <div id="proxyBtnLoader" class="loader border-white border-t-transparent w-4 h-4 hidden"></div>
+                    </button>
                 </div>
             </div>
-            
-            <p class="text-xs text-center text-gray-400 mt-4">
-                Server akan memproses video untuk Anda. Mohon tunggu beberapa detik setelah klik Download.
+            <p class="text-[10px] text-center text-gray-400 mt-2">
+                Download akan diproses melalui server proxy aman.
             </p>
-        </div>
-
-        <div class="mt-8 text-center">
-            <p class="text-xs text-gray-400">© 2024 VideoTools. Secure & Free.</p>
         </div>
     </div>
 
     <script>
-        // Masukkan URL Space Hugging Face Anda
+        // GANTI URL INI DENGAN URL SPACE ANDA
         const API_BASE_URL = "https://dzaky123-tiktok-api.hf.space";
         
-        const inputUrl = document.getElementById('tiktokUrl');
+        const statusDiv = document.getElementById('serverStatus');
         const downloadBtn = document.getElementById('downloadBtn');
         const btnText = document.getElementById('btnText');
-        const btnLoader = document.getElementById('btnLoader');
-        const resultArea = document.getElementById('resultArea');
-        const errorMsg = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
+        const inputUrl = document.getElementById('tiktokUrl');
         
-        // Elemen Tombol Download Hasil
-        const proxyDownloadBtn = document.getElementById('proxyDownloadBtn');
-        const proxyBtnText = document.getElementById('proxyBtnText');
-        const proxyBtnLoader = document.getElementById('proxyBtnLoader');
+        // Cek Status Server saat Halaman Dibuka
+        async function checkServer() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                if (response.ok) {
+                    serverOnline();
+                } else {
+                    throw new Error("Server error");
+                }
+            } catch (e) {
+                console.log("Server Check Failed:", e);
+                serverOffline();
+            }
+        }
+
+        function serverOnline() {
+            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-green-500 text-[8px]"></i> <span class="text-green-600">Server Online</span>`;
+            statusDiv.className = "absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-green-50 px-2 py-1 rounded-full border border-green-100";
+            
+            downloadBtn.disabled = false;
+            downloadBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            downloadBtn.classList.add('bg-black', 'hover:bg-gray-800');
+            btnText.innerText = "Cari Video";
+        }
+
+        function serverOffline() {
+            statusDiv.innerHTML = `<i class="fa-solid fa-circle text-red-500 text-[8px]"></i> <span class="text-red-600">Server Offline/Booting</span>`;
+            statusDiv.className = "absolute top-4 right-4 flex items-center space-x-2 text-xs font-medium bg-red-50 px-2 py-1 rounded-full border border-red-100";
+            
+            downloadBtn.disabled = true;
+            btnText.innerText = "Server Tidak Terhubung";
+            
+            // Coba cek lagi setiap 5 detik (siapa tau lagi booting)
+            setTimeout(checkServer, 5000);
+        }
 
         async function processVideo() {
             const url = inputUrl.value.trim();
             hideError();
-            resultArea.classList.add('hidden');
-            
-            if (!url) {
-                showError("Mohon masukkan tautan TikTok.");
-                return;
-            }
+            document.getElementById('resultArea').classList.add('hidden');
+
+            if (!url) return showError("Masukkan URL TikTok!");
 
             setLoading(true);
 
             try {
-                // Endpoint process hanya untuk mengambil metadata (Thumbnail/Judul)
                 const response = await fetch(`${API_BASE_URL}/api/process`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -152,76 +159,69 @@
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Gagal mencari video.');
-                }
+                if (!response.ok) throw new Error(data.detail || 'Gagal mengambil data.');
 
                 showResult(data.data);
-
             } catch (error) {
-                console.error(error);
-                showError("Gagal menghubungi server. Pastikan Space aktif.");
+                showError(error.message === "Failed to fetch" ? "Koneksi ke server gagal. Cek tab Logs di Hugging Face." : error.message);
             } finally {
                 setLoading(false);
             }
+        }
+
+        function downloadViaProxy() {
+            const url = inputUrl.value.trim();
+            const btn = document.getElementById('proxyDownloadBtn');
+            const txt = document.getElementById('proxyBtnText');
+            const load = document.getElementById('proxyBtnLoader');
+
+            btn.disabled = true;
+            txt.classList.add('hidden');
+            load.classList.remove('hidden');
+
+            const downloadUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(url)}`;
+            
+            setTimeout(() => {
+                window.location.href = downloadUrl;
+                setTimeout(() => {
+                    btn.disabled = false;
+                    txt.classList.remove('hidden');
+                    load.classList.add('hidden');
+                }, 3000);
+            }, 500);
         }
 
         function showResult(data) {
             document.getElementById('videoThumb').src = data.thumbnail;
             document.getElementById('videoTitle').innerText = data.title;
             document.getElementById('videoAuthor').innerText = '@' + data.author;
-            resultArea.classList.remove('hidden');
-        }
-
-        function downloadViaProxy() {
-            const url = inputUrl.value.trim();
-            if (!url) return;
-
-            // Efek Loading pada tombol download
-            proxyDownloadBtn.disabled = true;
-            proxyBtnText.classList.add('hidden');
-            proxyBtnLoader.classList.remove('hidden');
-
-            // Kita arahkan browser ke endpoint Streaming Server
-            // Menggunakan encodeURIComponent agar URL aman
-            const downloadUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(url)}`;
-            
-            // Timeout kecil untuk memberi efek visual sebelum browser mengambil alih
-            setTimeout(() => {
-                window.location.href = downloadUrl;
-                
-                // Reset tombol setelah beberapa detik (asumsi download sudah mulai)
-                setTimeout(() => {
-                    proxyDownloadBtn.disabled = false;
-                    proxyBtnText.classList.remove('hidden');
-                    proxyBtnLoader.classList.add('hidden');
-                }, 3000);
-            }, 500);
+            document.getElementById('resultArea').classList.remove('hidden');
         }
 
         function setLoading(isLoading) {
+            const loader = document.getElementById('btnLoader');
             if (isLoading) {
                 downloadBtn.disabled = true;
-                downloadBtn.classList.add('cursor-not-allowed', 'opacity-80');
                 btnText.classList.add('hidden');
-                btnLoader.classList.remove('hidden');
+                loader.classList.remove('hidden');
             } else {
                 downloadBtn.disabled = false;
-                downloadBtn.classList.remove('cursor-not-allowed', 'opacity-80');
                 btnText.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
+                loader.classList.add('hidden');
             }
         }
 
         function showError(msg) {
-            errorText.innerText = msg;
-            errorMsg.classList.remove('hidden');
+            document.getElementById('errorText').innerText = msg;
+            document.getElementById('errorMessage').classList.remove('hidden');
         }
 
         function hideError() {
-            errorMsg.classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
         }
+
+        // Jalankan cek server saat load
+        checkServer();
     </script>
 </body>
 </html>
