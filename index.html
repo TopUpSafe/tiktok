@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikSave Pro - Fast & Lite</title>
-    <meta name="description" content="Download video TikTok tanpa watermark. Versi ringan dan cepat.">
+    <title>TikSave Pro - Light Aurora</title>
+    <meta name="description" content="Download video TikTok tanpa watermark. Tampilan Light Mode yang bersih dan modern.">
     
-    <!-- Fonts: Inter (Lebih umum dan ringan dari Jakarta Sans, sering dicache browser) -->
+    <!-- Fonts: Plus Jakarta Sans (Tetap digunakan karena sangat modern) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,20 +18,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Inter"', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                     },
                     colors: {
-                        // Palet Dark Mode Modern (Mirip Vercel/GitHub Dark)
-                        bg: '#0a0a0a',
-                        surface: '#171717',
-                        border: '#262626',
-                        accent: '#EDEDED',
-                        muted: '#A1A1AA',
-                        brand: '#e11d48', // Pink TikTok yang lebih gelap/elegan
+                        // Warna khusus Light Mode
+                        slate: {
+                            850: '#1e293b', // Warna teks utama
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
                     }
                 }
             }
@@ -39,136 +44,213 @@
     </script>
 
     <style>
-        /* Base Reset */
+        /* SETUP BACKGROUND LIGHT MODE */
         body {
-            background-color: #0a0a0a; /* bg-neutral-950 */
-            color: #EDEDED;
-            /* Static subtle gradient - Ringan, tidak bergerak */
-            background-image: radial-gradient(circle at 50% 0%, #2a1820 0%, transparent 60%);
+            background-color: #F8FAFC; /* Slate-50: Bukan putih murni, lebih nyaman di mata */
+            color: #1e293b; /* Slate-800: Teks gelap, bukan hitam pekat */
+            min-height: 100vh;
+            
+            /* Gradient Pastel Statis (Aurora Light) */
+            /* Ini menciptakan nuansa 'langit pagi' yang segar */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(167, 139, 250, 0.15) 0px, transparent 50%), /* Ungu Muda */
+                radial-gradient(at 100% 0%, rgba(244, 114, 182, 0.15) 0px, transparent 50%), /* Pink Muda */
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.15) 0px, transparent 50%); /* Biru Muda */
             background-attachment: fixed;
         }
 
-        /* Utility classes custom untuk performa maksimal (menggantikan backdrop-filter) */
-        .card-surface {
-            background-color: #171717;
-            border: 1px solid #262626;
+        /* Kartu "Frosted Glass" Putih */
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.7); /* Putih transparan */
+            border: 1px solid rgba(255, 255, 255, 0.6); /* Border putih halus */
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); /* Bayangan sangat halus */
+            backdrop-filter: blur(8px); /* Blur ringan untuk efek premium */
+        }
+
+        /* Input Field Modern */
+        .input-light {
+            background: #ffffff;
+            border: 1px solid #e2e8f0; /* Slate-200 */
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02) inset;
         }
         
-        .input-surface {
-            background-color: #0a0a0a;
-            border: 1px solid #262626;
+        .input-light:focus-within {
+            border-color: #ec4899; /* Pink-500 */
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); /* Glow Pink halus */
         }
 
-        /* Focus ring yang tajam tanpa shadow berat */
-        .focus-ring:focus-within {
-            border-color: #525252;
-            outline: 2px solid transparent;
+        /* Tombol Gradient yang 'Pop' di Background Putih */
+        .btn-gradient-light {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .btn-gradient-light:hover {
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-gradient-light:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* Scrollbar Halus */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="antialiased flex flex-col min-h-screen">
+<body class="antialiased flex flex-col selection:bg-pink-200 selection:text-pink-900">
 
-    <!-- Navbar Minimalis -->
-    <nav class="w-full border-b border-border bg-bg/95 z-50">
-        <div class="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fa-brands fa-tiktok text-brand text-xl"></i>
-                <span class="font-bold tracking-tight text-lg">TikSave<span class="text-neutral-500">Lite</span></span>
+    <!-- Navbar: Glass White -->
+    <nav class="w-full border-b border-slate-200/60 bg-white/70 backdrop-blur-md z-50 sticky top-0">
+        <div class="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <!-- Logo: Putih dengan Icon Gradient -->
+                <div class="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-white shadow-sm">
+                    <i class="fa-brands fa-tiktok text-transparent bg-clip-text bg-gradient-to-br from-pink-500 to-violet-600 text-lg"></i>
+                </div>
+                <span class="font-bold tracking-tight text-lg text-slate-800">Tik<span class="text-pink-500">Save</span></span>
             </div>
             
-            <!-- Status Indikator Statis (Hemat Animasi) -->
-            <div id="serverStatus" class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-border text-xs">
-                <div class="w-2 h-2 rounded-full bg-neutral-500"></div>
-                <span class="text-muted font-medium">Init...</span>
+            <!-- Status Pill: Light Green -->
+            <div id="serverStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs shadow-sm">
+                <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                <span class="text-slate-500 font-semibold">Checking...</span>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 py-12 sm:px-6">
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 sm:px-6 relative overflow-hidden">
         
-        <div class="w-full max-w-lg space-y-8">
+        <!-- Hiasan Background Abstrak (Sangat Transparan) -->
+        <div class="absolute top-10 right-0 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-80 h-80 bg-pink-400/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+        <div class="w-full max-w-lg space-y-8 relative z-10">
             
-            <!-- Text Header -->
-            <div class="text-center space-y-2">
-                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-accent">
-                    Video Downloader
+            <!-- Header Text -->
+            <div class="text-center space-y-3">
+                <span class="inline-block py-1 px-3 rounded-full bg-white border border-indigo-100 text-indigo-600 text-[10px] font-bold tracking-wider uppercase shadow-sm mb-2">
+                    ☀️ Light Mode Edition
+                </span>
+                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-800 leading-[1.15]">
+                    Unduh Video TikTok <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-600">Jernih & Cepat</span>
                 </h1>
-                <p class="text-muted text-sm sm:text-base">
-                    Tempel tautan, unduh MP4 tanpa watermark.
+                <p class="text-slate-500 text-sm font-medium">
+                    Tempel tautan, kami proses sisanya. Tanpa watermark.
                 </p>
             </div>
 
-            <!-- Main Card -->
-            <div class="card-surface rounded-xl p-1 shadow-xl">
-                <div class="p-5 space-y-4">
-                    
-                    <!-- Input Group -->
-                    <div class="input-surface rounded-lg p-1 flex items-center gap-2 focus-ring transition-colors">
-                        <div class="pl-3 text-muted">
-                            <i class="fa-solid fa-link text-sm"></i>
+            <!-- Main Card (White Glass) -->
+            <div class="glass-card-light rounded-2xl p-6 sm:p-8 relative">
+                <!-- Dekorasi 'Sticker' di pojok kartu -->
+                <div class="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full blur-xl opacity-60 -z-10"></div>
+
+                <div class="space-y-5">
+                    <!-- Input Area -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-700 ml-1 uppercase tracking-wide">Link Video</label>
+                        <div class="input-light rounded-xl p-1.5 flex items-center gap-2 group">
+                            <div class="pl-3 text-slate-400 group-focus-within:text-pink-500 transition-colors">
+                                <i class="fa-solid fa-link"></i>
+                            </div>
+                            <input type="url" id="tiktokUrl" 
+                                class="w-full bg-transparent border-none py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-0 focus:outline-none font-medium" 
+                                placeholder="Tempel tautan TikTok di sini..." autocomplete="off">
+                            
+                            <button onclick="pasteFromClipboard()" class="hidden md:flex px-4 py-2 text-xs font-bold text-slate-600 hover:text-pink-600 bg-slate-50 hover:bg-pink-50 rounded-lg transition-colors border border-slate-100 items-center gap-1.5">
+                                <i class="fa-regular fa-clipboard"></i> Paste
+                            </button>
                         </div>
-                        <input type="url" id="tiktokUrl" 
-                            class="w-full bg-transparent border-none py-3 text-sm text-accent placeholder-neutral-600 focus:ring-0 focus:outline-none" 
-                            placeholder="https://vt.tiktok.com/..." autocomplete="off">
-                        
-                        <button onclick="pasteFromClipboard()" class="hidden md:block px-3 py-1.5 text-xs font-medium text-muted hover:text-accent bg-surface border border-border rounded hover:bg-neutral-800 transition-colors">
-                            Paste
-                        </button>
                     </div>
 
-                    <!-- Button Paste Mobile -->
-                    <button onclick="pasteFromClipboard()" class="md:hidden w-full py-2 text-xs font-medium text-muted bg-surface border border-border rounded hover:bg-neutral-800">
-                         Tempel Tautan
+                    <!-- Tombol Mobile Paste -->
+                    <button onclick="pasteFromClipboard()" class="md:hidden w-full py-2.5 btn-secondary rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                         <i class="fa-regular fa-clipboard text-slate-400"></i> Tempel dari Clipboard
                     </button>
 
-                    <!-- Action Button -->
+                    <!-- Tombol Utama -->
                     <button id="downloadBtn" onclick="processVideo()" disabled
-                        class="w-full py-3 px-4 bg-neutral-800 text-neutral-500 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+                        class="w-full py-4 px-4 bg-slate-200 text-slate-400 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed">
                         <span id="btnText">Menunggu Server...</span>
-                        <!-- Spinner CSS Murni (Lebih ringan dari SVG complex) -->
-                        <div id="btnLoader" class="hidden w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin"></div>
+                        <div id="btnLoader" class="hidden w-5 h-5 border-2 border-slate-400/30 border-t-slate-500 rounded-full animate-spin"></div>
                     </button>
 
-                    <!-- Error Alert -->
-                    <div id="errorMessage" class="hidden p-3 bg-red-950/30 border border-red-900/50 rounded-lg flex gap-3">
-                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-xs mt-0.5"></i>
-                        <p id="errorText" class="text-xs text-red-200">Error message here.</p>
+                    <!-- Pesan Error (Soft Red) -->
+                    <div id="errorMessage" class="hidden p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3 items-start animate-fade-in">
+                        <div class="p-1 bg-red-100 rounded-full text-red-500">
+                            <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-red-600">Ups, ada masalah</h4>
+                            <p id="errorText" class="text-[11px] text-red-500/80 mt-0.5 leading-snug">Error message here.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Result Section -->
-            <div id="resultContainer" class="hidden">
-                <!-- Skeleton (Simple block colors) -->
-                <div id="skeletonLoader" class="card-surface rounded-xl p-4 animate-pulse flex gap-4">
-                    <div class="w-20 h-28 bg-neutral-800 rounded"></div>
-                    <div class="flex-1 space-y-3 py-1">
-                        <div class="h-4 bg-neutral-800 rounded w-3/4"></div>
-                        <div class="h-3 bg-neutral-800 rounded w-1/2"></div>
+            <div id="resultContainer" class="hidden animate-fade-in">
+                <!-- Skeleton Loader (Light Gray) -->
+                <div id="skeletonLoader" class="glass-card-light rounded-2xl p-4 flex gap-4 animate-pulse border-none">
+                    <div class="w-24 h-32 bg-slate-200 rounded-lg"></div>
+                    <div class="flex-1 space-y-3 py-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+                        <div class="h-10 bg-slate-200 rounded-lg mt-4"></div>
                     </div>
                 </div>
 
-                <!-- Actual Result -->
-                <div id="resultContent" class="hidden card-surface rounded-xl p-4 border border-border">
-                    <div class="flex gap-4">
-                        <img id="videoThumb" src="" class="w-24 h-auto object-cover rounded bg-neutral-800 border border-border shrink-0">
+                <!-- Actual Result (White Card with Shadow) -->
+                <div id="resultContent" class="hidden bg-white rounded-2xl p-4 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)]">
+                    <div class="flex flex-col sm:flex-row gap-5">
+                        <div class="relative group w-full sm:w-28 flex-shrink-0">
+                            <img id="videoThumb" src="" class="w-full aspect-[3/4] object-cover rounded-xl shadow-md border border-slate-100">
+                            <!-- Overlay Play Button -->
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center text-white drop-shadow-md">
+                                    <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <div class="flex-1 min-w-0 flex flex-col justify-between">
+                        <div class="flex-1 min-w-0 flex flex-col justify-between py-1">
                             <div>
-                                <p id="videoAuthor" class="text-xs font-medium text-brand mb-0.5">@Username</p>
-                                <h3 id="videoTitle" class="text-sm text-accent line-clamp-2 leading-snug">Title video...</h3>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                        <i class="fa-solid fa-user text-[10px] text-slate-500"></i>
+                                    </div>
+                                    <p id="videoAuthor" class="text-xs font-bold text-slate-700">@Username</p>
+                                </div>
+                                <h3 id="videoTitle" class="text-sm font-semibold text-slate-800 line-clamp-2 leading-relaxed mb-4">
+                                    Judul video...
+                                </h3>
                             </div>
                             
-                            <div class="mt-3 space-y-2">
+                            <div class="space-y-3">
                                 <button id="proxyDownloadBtn" onclick="downloadViaProxy()" 
-                                    class="w-full py-2 bg-brand hover:bg-rose-600 text-white text-xs font-bold rounded shadow-sm transition-colors flex items-center justify-center gap-2">
-                                    <span id="proxyBtnText">Download HD</span>
-                                    <div id="proxyBtnLoader" class="hidden w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                                    class="w-full py-3 btn-gradient-light text-white text-xs font-bold uppercase tracking-wide rounded-xl flex items-center justify-center gap-2 group">
+                                    <span id="proxyBtnText"><i class="fa-solid fa-cloud-arrow-down text-sm mr-1"></i> Simpan ke Galeri</span>
+                                    <div id="proxyBtnLoader" class="hidden w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
                                 </button>
                                 
-                                <a id="fallbackLink" href="#" target="_blank" class="hidden block text-center text-[10px] text-muted underline decoration-dotted">
-                                    Link Alternatif
+                                <a id="fallbackLink" href="#" target="_blank" class="hidden block text-center text-[10px] text-slate-400 hover:text-pink-500 transition-colors font-medium">
+                                    Link download alternatif
                                 </a>
                             </div>
                         </div>
@@ -177,33 +259,40 @@
             </div>
 
             <!-- Footer Features -->
-            <div class="grid grid-cols-3 gap-2 text-center pt-4">
+            <div class="grid grid-cols-3 gap-3 text-center pt-2">
                 <div class="p-3">
-                    <i class="fa-solid fa-gauge-high text-neutral-600 mb-2"></i>
-                    <p class="text-[10px] text-muted">Cepat</p>
+                    <div class="w-8 h-8 mx-auto bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-bolt text-xs"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Super Cepat</p>
                 </div>
                 <div class="p-3">
-                    <i class="fa-solid fa-ban text-neutral-600 mb-2"></i>
-                    <p class="text-[10px] text-muted">No WM</p>
+                    <div class="w-8 h-8 mx-auto bg-pink-50 text-pink-500 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-film text-xs"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Kualitas HD</p>
                 </div>
                 <div class="p-3">
-                    <i class="fa-solid fa-lock text-neutral-600 mb-2"></i>
-                    <p class="text-[10px] text-muted">Aman</p>
+                    <div class="w-8 h-8 mx-auto bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-shield-halved text-xs"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Aman</p>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <footer class="py-6 text-center border-t border-border mt-auto">
-        <p class="text-[10px] text-neutral-600">© 2024 TikSave Lite. Serverless V4.</p>
+    <footer class="py-6 text-center border-t border-slate-200 mt-auto bg-white/50 backdrop-blur-sm">
+        <p class="text-[10px] text-slate-400 font-medium">
+            &copy; 2024 TikSave Pro Light Edition
+        </p>
     </footer>
 
+    <!-- JAVASCRIPT LOGIC (SAMA SEPERTI SEBELUMNYA) -->
     <script>
-        // CONFIGURATION
         const API_BASE_URL = "https://dzaky123-tiktok-api.hf.space";
         
-        // DOM Elements (Cached)
         const ui = {
             status: document.getElementById('serverStatus'),
             input: document.getElementById('tiktokUrl'),
@@ -236,21 +325,23 @@
         }
 
         function setServerOnline() {
-            ui.status.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-green-500 font-medium">Ready</span>`;
-            ui.status.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-green-950/30 border border-green-900/50 text-xs";
+            // Indikator Hijau Cerah
+            ui.status.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span class="text-emerald-600 font-bold tracking-tight">ONLINE</span>`;
+            ui.status.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-xs shadow-sm";
             
             ui.mainBtn.disabled = false;
-            ui.mainBtn.className = "w-full py-3 px-4 bg-white hover:bg-neutral-200 text-black rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow";
-            ui.mainBtnText.innerText = "Cari Video";
+            // Tombol Gradient Light Mode
+            ui.mainBtn.className = "w-full py-4 px-4 btn-gradient-light text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 transition-all";
+            ui.mainBtnText.innerText = "DOWNLOAD VIDEO";
         }
 
         function setServerOffline() {
-            ui.status.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div><span class="text-red-500 font-medium">Offline</span>`;
-            ui.status.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/30 border border-red-900/50 text-xs";
+            ui.status.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div><span class="text-rose-600 font-bold">OFFLINE</span>`;
+            ui.status.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100 text-xs shadow-sm";
             
             ui.mainBtn.disabled = true;
-            ui.mainBtn.className = "w-full py-3 px-4 bg-neutral-800 text-neutral-500 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed";
-            ui.mainBtnText.innerText = "Connecting...";
+            ui.mainBtn.className = "w-full py-4 px-4 bg-slate-200 text-slate-400 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed";
+            ui.mainBtnText.innerText = "Mencoba Menghubungkan...";
             setTimeout(checkServer, 5000);
         }
 
@@ -259,10 +350,7 @@
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) ui.input.value = text;
-            } catch (err) {
-                // Fail silently or focus input
-                ui.input.focus();
-            }
+            } catch (err) { ui.input.focus(); }
         }
 
         // --- Process ---
@@ -270,7 +358,7 @@
             const url = ui.input.value.trim();
             resetUI();
             
-            if (!url) return showError("Masukkan URL dulu.");
+            if (!url) return showError("Link videonya belum diisi, nih!");
 
             setLoading(true);
             ui.resultContainer.classList.remove('hidden');
@@ -284,12 +372,12 @@
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Gagal.');
+                if (!response.ok) throw new Error(data.detail || 'Gagal mengambil data.');
 
                 showResult(data.data);
             } catch (error) {
                 ui.resultContainer.classList.add('hidden');
-                showError("Gagal memproses. Cek koneksi / URL.");
+                showError(error.message || "Gagal. Cek koneksi atau link video.");
             } finally {
                 setLoading(false);
                 ui.skeleton.classList.add('hidden');
@@ -338,10 +426,12 @@
                 ui.mainBtn.disabled = true;
                 ui.mainBtnText.classList.add('hidden');
                 ui.mainBtnLoader.classList.remove('hidden');
+                ui.mainBtn.classList.add('opacity-75', 'cursor-not-allowed');
             } else {
                 ui.mainBtn.disabled = false;
                 ui.mainBtnText.classList.remove('hidden');
                 ui.mainBtnLoader.classList.add('hidden');
+                ui.mainBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             }
         }
 
