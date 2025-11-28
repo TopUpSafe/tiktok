@@ -96,9 +96,10 @@
                         <h3 id="videoTitle" class="text-sm font-medium text-gray-900 truncate mt-1">Video Title</h3>
                         
                         <div class="mt-3 flex space-x-2">
-                            <a id="downloadLink" href="#" target="_blank"
-                                class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow-sm transition">
-                                <i class="fa-solid fa-download mr-2"></i> MP4
+                            <!-- UPDATE: Tombol Download sekarang menggunakan fungsi downloadViaProxy -->
+                            <a id="downloadLink" href="#" onclick="downloadViaProxy(event)" 
+                                class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow-sm transition cursor-pointer">
+                                <i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4
                             </a>
                             <button onclick="copyLink()" class="inline-flex justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                                 <i class="fa-regular fa-copy"></i>
@@ -109,7 +110,7 @@
             </div>
             
             <p class="text-xs text-center text-gray-400 mt-4">
-                Klik tombol "MP4" untuk membuka video, lalu tekan titik tiga dan "Download".
+                Jika download tidak berjalan, server mungkin sedang sibuk.
             </p>
         </div>
 
@@ -120,9 +121,10 @@
     </div>
 
     <script>
-        // KONFIGURASI API (Sudah Diperbaiki)
-        // Kita mengubah format dari huggingface.co/spaces/user/repo menjadi user-repo.hf.space
+        // Gunakan URL yang sama dengan yang sudah Anda setup sebelumnya
         const API_BASE_URL = "https://dzaky123-tiktok-api.hf.space";
+        
+        let currentDirectUrl = ""; // Menyimpan URL video asli
 
         const inputUrl = document.getElementById('tiktokUrl');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -134,36 +136,23 @@
 
         async function processVideo() {
             const url = inputUrl.value.trim();
-
-            // Reset UI
             hideError();
             resultArea.classList.add('hidden');
             
-            // Validasi Input Client-Side Sederhana
             if (!url) {
                 showError("Mohon masukkan tautan TikTok.");
                 return;
             }
 
-            // Set Loading State
             setLoading(true);
 
             try {
-                // Panggil Backend
-                // Kita memanggil endpoint /api/process yang sudah didefinisikan di backend Python
+                // 1. Dapatkan Info Video
                 const response = await fetch(`${API_BASE_URL}/api/process`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
                 });
-
-                // Cek apakah responsnya JSON valid
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server sedang sibuk atau URL salah. Coba refresh halaman.");
-                }
 
                 const data = await response.json();
 
@@ -171,16 +160,11 @@
                     throw new Error(data.detail || 'Gagal memproses video.');
                 }
 
-                // Tampilkan Hasil
                 showResult(data.data);
 
             } catch (error) {
                 console.error(error);
-                if (error.message.includes('Failed to fetch')) {
-                    showError("Tidak dapat terhubung ke server. Pastikan Space di Hugging Face berstatus 'Running'.");
-                } else {
-                    showError(error.message);
-                }
+                showError("Gagal menghubungi server. Pastikan Hugging Face Space Anda aktif.");
             } finally {
                 setLoading(false);
             }
@@ -191,12 +175,25 @@
             document.getElementById('videoTitle').innerText = data.title;
             document.getElementById('videoAuthor').innerText = '@' + data.author;
             
-            const dlLink = document.getElementById('downloadLink');
-            dlLink.href = data.video_url;
-            // Penting: Mengatur nama file download jika memungkinkan
-            dlLink.setAttribute('download', `tiktok-${Date.now()}.mp4`);
+            // Simpan URL asli untuk dicopy jika perlu
+            currentDirectUrl = data.video_url;
 
             resultArea.classList.remove('hidden');
+        }
+
+        // FUNGSI BARU: Download melalui Proxy Server
+        function downloadViaProxy(event) {
+            event.preventDefault(); // Mencegah link membuka tab baru
+            
+            if (!currentDirectUrl) return;
+
+            // Kita arahkan browser ke endpoint /api/download di server kita
+            // Server akan mengambil video dan mengirimkannya ke browser
+            // encodeURIComponent penting agar URL yang panjang tidak rusak
+            const proxyUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(currentDirectUrl)}`;
+            
+            // Membuka download di tab/window baru yang akan langsung memicu "Save As"
+            window.location.href = proxyUrl;
         }
 
         function setLoading(isLoading) {
@@ -223,9 +220,8 @@
         }
 
         function copyLink() {
-            const link = document.getElementById('downloadLink').href;
-            navigator.clipboard.writeText(link).then(() => {
-                alert("Tautan disalin ke clipboard!");
+            navigator.clipboard.writeText(currentDirectUrl).then(() => {
+                alert("Tautan asli disalin! (Mungkin perlu VPN/Header khusus untuk membukanya)");
             });
         }
     </script>
