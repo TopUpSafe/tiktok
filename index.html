@@ -14,7 +14,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         
-        /* Animasi Gradient Background */
         .gradient-bg {
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
@@ -27,7 +26,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Custom Spinner */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #e73c7e;
@@ -84,11 +82,10 @@
             <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="errorText">Terjadi kesalahan</span>
         </div>
 
-        <!-- Result Area (Hidden by default) -->
+        <!-- Result Area -->
         <div id="resultArea" class="hidden mt-8 animate-fade-in transition-all duration-500">
             <div class="border border-gray-100 rounded-xl p-4 bg-gray-50">
                 <div class="flex items-start space-x-4">
-                    <!-- Thumbnail -->
                     <img id="videoThumb" src="" alt="Thumbnail" class="w-20 h-20 object-cover rounded-lg shadow-sm bg-gray-200">
                     
                     <div class="flex-1 min-w-0">
@@ -96,7 +93,7 @@
                         <h3 id="videoTitle" class="text-sm font-medium text-gray-900 truncate mt-1">Video Title</h3>
                         
                         <div class="mt-3 flex space-x-2">
-                            <!-- UPDATE: Tombol Download sekarang menggunakan fungsi downloadViaProxy -->
+                            <!-- Tombol Download -->
                             <a id="downloadLink" href="#" onclick="downloadViaProxy(event)" 
                                 class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white bg-pink-600 hover:bg-pink-700 shadow-sm transition cursor-pointer">
                                 <i class="fa-solid fa-download mr-2"></i> DOWNLOAD MP4
@@ -108,24 +105,20 @@
                     </div>
                 </div>
             </div>
-            
             <p class="text-xs text-center text-gray-400 mt-4">
-                Jika download tidak berjalan, server mungkin sedang sibuk.
+                Klik Download. Tunggu sebentar, server sedang memproses file.
             </p>
         </div>
 
-        <!-- Footer -->
         <div class="mt-8 text-center">
             <p class="text-xs text-gray-400">© 2024 VideoTools. Secure & Free.</p>
         </div>
     </div>
 
     <script>
-        // Gunakan URL yang sama dengan yang sudah Anda setup sebelumnya
+        // Update URL Backend Hugging Face Anda di sini
         const API_BASE_URL = "https://dzaky123-tiktok-api.hf.space";
         
-        let currentDirectUrl = ""; // Menyimpan URL video asli
-
         const inputUrl = document.getElementById('tiktokUrl');
         const downloadBtn = document.getElementById('downloadBtn');
         const btnText = document.getElementById('btnText');
@@ -147,7 +140,7 @@
             setLoading(true);
 
             try {
-                // 1. Dapatkan Info Video
+                // Endpoint /api/process sekarang hanya untuk preview (Thumbnail/Judul)
                 const response = await fetch(`${API_BASE_URL}/api/process`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -174,25 +167,21 @@
             document.getElementById('videoThumb').src = data.thumbnail;
             document.getElementById('videoTitle').innerText = data.title;
             document.getElementById('videoAuthor').innerText = '@' + data.author;
-            
-            // Simpan URL asli untuk dicopy jika perlu
-            currentDirectUrl = data.video_url;
-
             resultArea.classList.remove('hidden');
         }
 
-        // FUNGSI BARU: Download melalui Proxy Server
         function downloadViaProxy(event) {
-            event.preventDefault(); // Mencegah link membuka tab baru
+            event.preventDefault(); 
             
-            if (!currentDirectUrl) return;
+            // LOGIKA BARU:
+            // Kita mengambil nilai dari input box langsung (URL Asli TikTok)
+            // Ini dikirim ke backend agar backend melakukan ekstraksi segar + streaming.
+            const originalUrl = inputUrl.value.trim();
+            
+            if (!originalUrl) return;
 
-            // Kita arahkan browser ke endpoint /api/download di server kita
-            // Server akan mengambil video dan mengirimkannya ke browser
-            // encodeURIComponent penting agar URL yang panjang tidak rusak
-            const proxyUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(currentDirectUrl)}`;
-            
-            // Membuka download di tab/window baru yang akan langsung memicu "Save As"
+            // Membuka link di tab baru akan memicu browser mendownload file
+            const proxyUrl = `${API_BASE_URL}/api/download?url=${encodeURIComponent(originalUrl)}`;
             window.location.href = proxyUrl;
         }
 
@@ -220,8 +209,8 @@
         }
 
         function copyLink() {
-            navigator.clipboard.writeText(currentDirectUrl).then(() => {
-                alert("Tautan asli disalin! (Mungkin perlu VPN/Header khusus untuk membukanya)");
+            navigator.clipboard.writeText(inputUrl.value).then(() => {
+                alert("Link asli disalin.");
             });
         }
     </script>
